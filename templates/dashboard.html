@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palo Alto Lead History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Design tokens ── */
+    :root {
+      --color-probate:     #3B82F6;
+      --color-foreclosure: #EF4444;
+      --color-tax:         #F59E0B;
+      --color-divorce:     #8B5CF6;
+
+      --navy:    #1a2540;
+      --navy-2:  #243050;
+      --bg:      #f0f4f8;
+      --card-bg: #ffffff;
+      --text:    #1e293b;
+      --muted:   #64748b;
+      --border:  #e2e8f0;
+      --radius:  10px;
+      --shadow:  0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: #fff;
+      padding: 28px 32px 24px;
+    }
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .header .subtitle {
+      margin-top: 6px;
+      font-size: 0.875rem;
+      opacity: 0.75;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    section { margin-bottom: 32px; }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Summary cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-top: 4px solid var(--accent);
+    }
+
+    .stat-card .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .stat-card .info .count {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .stat-card .info .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── Chart card ── */
+    .chart-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 360px;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    #searchInput {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #searchInput:focus { border-color: var(--navy); }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .15s;
+    }
+    .tab-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .tab-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+    .tab-btn[data-type="probate"].active      { background: var(--color-probate);     border-color: var(--color-probate); }
+    .tab-btn[data-type="foreclosure"].active  { background: var(--color-foreclosure); border-color: var(--color-foreclosure); }
+    .tab-btn[data-type="tax_default"].active  { background: var(--color-tax);         border-color: var(--color-tax); }
+    .tab-btn[data-type="divorce"].active      { background: var(--color-divorce);     border-color: var(--color-divorce); }
+
+    .row-count {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Table card ── */
+    .table-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead th {
+      background: #f8fafc;
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-left: 4px solid transparent;
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    tbody tr[data-type="probate"]     { border-left-color: var(--color-probate); }
+    tbody tr[data-type="foreclosure"] { border-left-color: var(--color-foreclosure); }
+    tbody tr[data-type="tax_default"] { border-left-color: var(--color-tax); }
+    tbody tr[data-type="divorce"]     { border-left-color: var(--color-divorce); }
+
+    td { padding: 12px 14px; vertical-align: top; }
+
+    /* Type badge */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      white-space: nowrap;
+      color: #fff;
+    }
+    .badge-probate     { background: var(--color-probate); }
+    .badge-foreclosure { background: var(--color-foreclosure); }
+    .badge-tax_default { background: var(--color-tax); color: #1e293b; }
+    .badge-divorce     { background: var(--color-divorce); }
+
+    /* Repeat badge */
+    .repeat-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.65rem;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .name-line { font-weight: 600; color: var(--text); }
+    .addr-line { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .contact-name { font-weight: 500; }
+    .contact-detail { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+
+    /* Action buttons */
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-sm {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .btn-sm:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+    /* Empty state */
+    .empty-state {
+      padding: 64px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header { padding: 20px 16px; }
+      .container { padding: 20px 12px 48px; }
+      thead th:nth-child(3),
+      thead th:nth-child(4),
+      td:nth-child(3),
+      td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <h1>Palo Alto Lead History</h1>
+  <p class="subtitle">
+    {% if stats.total > 0 %}
+      {{ stats.total }} total leads
+      {% if stats.earliest and stats.latest %}
+        &nbsp;·&nbsp; {{ stats.earliest }} — {{ stats.latest }}
+      {% endif %}
+    {% else %}
+      No leads collected yet
+    {% endif %}
+  </p>
+</header>
+
+<div class="container">
+
+  <!-- ── Summary cards ── -->
+  <section>
+    <div class="section-title">Lead Summary</div>
+    <div class="stats-grid">
+      <div class="stat-card" style="--accent: var(--color-probate);">
+        <div class="icon">🏛️</div>
+        <div class="info">
+          <div class="count">{{ stats.probate }}</div>
+          <div class="label">Probate / Obituary</div>
+        </div>
+      </div>
+      <div class="stat-card" style="--accent: var(--color-foreclosure);">
+        <div class="icon">🏦</div>
+        <div class="info">
+          <div class="count">{{ stats.foreclosure }}</div>
+          <div class="label">Pre-Foreclosure</div>
+        </div>
+      </div>
+      <div class="stat-card" style="--accent: var(--color-tax);">
+        <div class="icon">📋</div>
+        <div class="info">
+          <div class="count">{{ stats.tax_default }}</div>
+          <div class="label">Tax Delinquent</div>
+        </div>
+      </div>
+      <div class="stat-card" style="--accent: var(--color-divorce);">
+        <div class="icon">⚖️</div>
+        <div class="info">
+          <div class="count">{{ stats.divorce }}</div>
+          <div class="label">Divorce</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Weekly trend chart ── -->
+  <section>
+    <div class="section-title">New Leads per Week</div>
+    <div class="chart-card">
+      {% if runs %}
+        <div class="chart-wrap">
+          <canvas id="trendsChart"></canvas>
+        </div>
+      {% else %}
+        <p style="color:var(--muted);font-size:.875rem;padding:24px 0;">
+          No weekly run data yet.
+        </p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ── Lead table ── -->
+  <section>
+    <div class="section-title">All Leads</div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="Search name, address, contact…" />
+      </div>
+
+      <div class="filter-tabs">
+        <button class="tab-btn active" data-type="">All</button>
+        <button class="tab-btn" data-type="probate">Probate</button>
+        <button class="tab-btn" data-type="foreclosure">Foreclosure</button>
+        <button class="tab-btn" data-type="tax_default">Tax Default</button>
+        <button class="tab-btn" data-type="divorce">Divorce</button>
+      </div>
+
+      <span class="row-count" id="rowCount"></span>
+    </div>
+
+    <div class="table-card">
+      {% if leads %}
+        <div class="table-wrap">
+          <table id="leadsTable">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Name / Address</th>
+                <th>Filed</th>
+                <th>First Seen</th>
+                <th>Contact</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              {% for lead in leads %}
+              <tr
+                data-type="{{ lead.lead_type }}"
+                data-search="{{ [lead.owner_name or '', lead.address or '', lead.contact_name or ''] | join(' ') | lower }}"
+              >
+                <!-- Type badge -->
+                <td>
+                  <span class="badge badge-{{ lead.lead_type }}">
+                    {% if lead.lead_type == 'probate' %}Probate
+                    {% elif lead.lead_type == 'foreclosure' %}Foreclosure
+                    {% elif lead.lead_type == 'tax_default' %}Tax Default
+                    {% elif lead.lead_type == 'divorce' %}Divorce
+                    {% else %}{{ lead.lead_type }}{% endif %}
+                  </span>
+                  {% if lead.times_reported and lead.times_reported > 1 %}
+                    <span class="repeat-badge">×{{ lead.times_reported }}</span>
+                  {% endif %}
+                </td>
+
+                <!-- Name / Address -->
+                <td>
+                  <div class="name-line">{{ lead.owner_name or '—' }}</div>
+                  {% if lead.address %}
+                    <div class="addr-line">{{ lead.address }}{% if lead.zip_code %}, {{ lead.zip_code }}{% endif %}</div>
+                  {% endif %}
+                </td>
+
+                <!-- Filed date -->
+                <td>{{ (lead.filing_date or '')[:10] or '—' }}</td>
+
+                <!-- First seen -->
+                <td>{{ (lead.first_seen or '')[:10] or '—' }}</td>
+
+                <!-- Contact -->
+                <td>
+                  {% if lead.contact_name %}
+                    <div class="contact-name">{{ lead.contact_name }}</div>
+                  {% endif %}
+                  {% if lead.contact_phone %}
+                    <div class="contact-detail">{{ lead.contact_phone }}</div>
+                  {% endif %}
+                  {% if lead.contact_email %}
+                    <div class="contact-detail">{{ lead.contact_email }}</div>
+                  {% endif %}
+                  {% if not lead.contact_name and not lead.contact_phone and not lead.contact_email %}
+                    <span style="color:var(--muted)">—</span>
+                  {% endif %}
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <div class="actions">
+                    {% if lead.google_search_url %}
+                      <a class="btn-sm" href="{{ lead.google_search_url }}" target="_blank" rel="noopener">
+                        🔍 Google
+                      </a>
+                    {% endif %}
+                    {% if lead.owner_name %}
+                      <button class="btn-sm copy-btn" data-name="{{ lead.owner_name }}">
+                        📋 Copy Name
+                      </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>No leads yet — run the weekly report to start collecting.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- Toast -->
+<div id="toast">Copied to clipboard!</div>
+
+<!-- ── Scripts ── -->
+<script>
+  // ── Data from Flask ──
+  const ALL_LEADS = {{ leads_json | safe }};
+  const RUNS_DATA = {{ runs_json | safe }};
+
+  // ── Weekly chart ──
+  (function () {
+    const canvas = document.getElementById("trendsChart");
+    if (!canvas || RUNS_DATA.length === 0) return;
+
+    const labels = RUNS_DATA.map(r => r.run_date ? r.run_date.slice(0, 10) : "");
+    const data   = RUNS_DATA.map(r => r.new_leads || 0);
+
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "New Leads",
+          data,
+          backgroundColor: "rgba(59, 130, 246, 0.75)",
+          borderColor:     "rgba(59, 130, 246, 1)",
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.y} new lead${ctx.parsed.y !== 1 ? "s" : ""}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 }, maxRotation: 45 },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1, font: { size: 11 } },
+            grid: { color: "#f1f5f9" },
+          },
+        },
+      },
+    });
+  })();
+
+  // ── Table filter ──
+  const tableBody   = document.getElementById("tableBody");
+  const searchInput = document.getElementById("searchInput");
+  const rowCount    = document.getElementById("rowCount");
+  const tabBtns     = document.querySelectorAll(".tab-btn");
+
+  let activeType = "";
+
+  function updateTable() {
+    if (!tableBody) return;
+    const q = searchInput ? searchInput.value.trim().toLowerCase() : "";
+    const rows = tableBody.querySelectorAll("tr");
+    let visible = 0;
+
+    rows.forEach(row => {
+      const typeMatch = !activeType || row.dataset.type === activeType;
+      const searchStr = row.dataset.search || "";
+      const qMatch    = !q || searchStr.includes(q);
+      const show      = typeMatch && qMatch;
+      row.style.display = show ? "" : "none";
+      if (show) visible++;
+    });
+
+    if (rowCount) {
+      rowCount.textContent = `Showing ${visible} of ${rows.length} lead${rows.length !== 1 ? "s" : ""}`;
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", updateTable);
+  }
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeType = btn.dataset.type;
+      updateTable();
+    });
+  });
+
+  // Initial count
+  updateTable();
+
+  // ── Copy to clipboard ──
+  const toast = document.getElementById("toast");
+  let toastTimer;
+
+  document.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.name;
+      navigator.clipboard.writeText(name).then(() => {
+        clearTimeout(toastTimer);
+        toast.classList.add("show");
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
