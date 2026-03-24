@@ -1,0 +1,36 @@
+# ── Secrets — NEVER commit these ──────────────────────────────────────────
+.env
+
+# ── Local data & generated files ──────────────────────────────────────────
+data/
+*.db
+*.sqlite
+
+# ── Claude Code local config ───────────────────────────────────────────────
+.claude/
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+.venv/
+venv/
+env/
+.env.local
+
+# ── macOS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+logs/

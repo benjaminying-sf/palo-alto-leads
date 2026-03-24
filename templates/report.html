@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palo Alto Motivated Seller Leads — {{ report_date }}</title>
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      padding: 24px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 32px 40px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .header .subtitle { font-size: 14px; opacity: 0.75; }
+
+    /* Summary bar */
+    .summary {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .summary-card {
+      flex: 1;
+      min-width: 140px;
+      background: white;
+      border-radius: 10px;
+      padding: 18px 22px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-top: 4px solid var(--color);
+    }
+    .summary-card .count { font-size: 36px; font-weight: 800; color: var(--color); }
+    .summary-card .label { font-size: 12px; font-weight: 600; text-transform: uppercase;
+                           letter-spacing: .5px; color: #666; margin-top: 4px; }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 32px 0 14px;
+    }
+    .section-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--color);
+      flex-shrink: 0;
+    }
+    .section-title { font-size: 18px; font-weight: 700; color: var(--color); }
+    .section-count {
+      background: var(--color);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* Lead card */
+    .lead-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      border-left: 5px solid var(--color);
+    }
+    .lead-address {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+    .lead-owner {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+    .lead-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .lead-field { font-size: 13px; }
+    .lead-field-label {
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: .5px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .lead-field-value { color: #222; word-break: break-word; }
+    .lead-field-value a { color: var(--color); text-decoration: none; }
+    .lead-field-value a:hover { text-decoration: underline; }
+
+    .extra-info {
+      font-size: 12px;
+      color: #777;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+      font-style: italic;
+    }
+
+    .no-leads {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      color: #999;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* Script quickref section */
+    .scripts-section {
+      margin-top: 40px;
+      background: white;
+      border-radius: 12px;
+      padding: 28px 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .scripts-section h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    .script-block {
+      background: #f8f9fb;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--color);
+    }
+    .script-block h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--color);
+    }
+    .script-block p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 32px;
+    }
+
+    /* Tag pill */
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--color);
+      color: white;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <h1>📍 Palo Alto Motivated Seller Leads</h1>
+  <div class="subtitle">Week of {{ report_date }} &nbsp;·&nbsp; Generated Sunday evening &nbsp;·&nbsp; {{ total_new }} new leads this week</div>
+</div>
+
+<!-- ── Summary cards ── -->
+<div class="summary">
+  <div class="summary-card" style="--color: #3B82F6;">
+    <div class="count">{{ counts.probate }}</div>
+    <div class="label">Probate / Estate</div>
+  </div>
+  <div class="summary-card" style="--color: #EF4444;">
+    <div class="count">{{ counts.foreclosure }}</div>
+    <div class="label">Pre-Foreclosure</div>
+  </div>
+  <div class="summary-card" style="--color: #F59E0B;">
+    <div class="count">{{ counts.tax_default }}</div>
+    <div class="label">Tax Delinquent</div>
+  </div>
+  <div class="summary-card" style="--color: #8B5CF6;">
+    <div class="count">{{ counts.divorce }}</div>
+    <div class="label">Divorce / Dissolution</div>
+  </div>
+</div>
+
+<!-- ── Probate / Estate leads (obituaries + court filings) ── -->
+<div class="section-header" style="--color: #3B82F6;">
+  <div class="section-dot"></div>
+  <div class="section-title">Probate / Estate Sales</div>
+  <div class="section-count">{{ leads_by_type.probate | length }}</div>
+</div>
+
+{% if leads_by_type.probate %}
+
+  {# ── Obituary leads (already Palo Alto-specific) ─────────────────────── #}
+  {% set obit_leads = leads_by_type.probate | selectattr("obit_url", "defined") | selectattr("obit_url") | list %}
+  {% set court_leads = leads_by_type.probate | rejectattr("obit_url", "defined") | list + (leads_by_type.probate | selectattr("obit_url", "defined") | rejectattr("obit_url") | list) %}
+
+  {% if obit_leads %}
+  <div style="background:#F0FDF4; border-radius:8px; padding:12px 16px; margin-bottom:14px;
+              font-size:13px; color:#065F46; border-left:4px solid #10B981;">
+    <strong>📰 Obituary Leads — already Palo Alto-specific.</strong>
+    These people recently died in Palo Alto. Click the links to find their address and confirm property ownership.
+    Takes about 30 seconds per name.
+  </div>
+  {% for lead in obit_leads %}
+  <div class="lead-card" style="--color: #10B981;">
+    <div class="lead-address">
+      <strong>{{ lead.owner_name or "Unknown" }}</strong>
+    </div>
+    <div class="lead-owner">
+      <span class="tag" style="background:#10B981; --color:#10B981;">Obituary</span>
+      <span class="tag" style="background:#3B82F6; --color:#3B82F6;">Probate</span>
+      {% if lead.filing_date %}Published: {{ lead.filing_date }}{% endif %}
+    </div>
+    <div class="lead-grid">
+      <div class="lead-field" style="grid-column: 1 / -1;">
+        <div class="lead-field-label">Find address &amp; confirm Palo Alto property — click in order:</div>
+        <div class="lead-field-value" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;">
+          {% if lead.obit_url %}
+          <a href="{{ lead.obit_url }}" target="_blank"
+             style="display:inline-block; background:#10B981; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+            📰 Read Obituary
+          </a>
+          {% endif %}
+          {% if lead.tps_url %}
+          <a href="{{ lead.tps_url }}" target="_blank"
+             style="display:inline-block; background:#0EA5E9; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+            🏠 Find Address (TruePeopleSearch)
+          </a>
+          {% endif %}
+          <a href="{{ lead.google_search_url }}" target="_blank"
+             style="display:inline-block; background:#3B82F6; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+            🔍 Google: "{{ lead.owner_name }}" Palo Alto property
+          </a>
+          <a href="https://www.sccassessor.org/apps/realpropertysearch.aspx" target="_blank"
+             style="display:inline-block; background:#6B7280; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+            County Assessor →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% if lead.extra_info %}
+    <div class="extra-info">{{ lead.extra_info }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# ── Court portal leads (county-wide, need Palo Alto verification) ─────── #}
+  {% if court_leads %}
+  <div style="background:#EFF6FF; border-radius:8px; padding:12px 16px; margin-bottom:14px;
+              font-size:13px; color:#1E40AF; border-left:4px solid #3B82F6; margin-top:{% if obit_leads %}20px{% else %}0{% endif %};">
+    <strong>⚠️ Court Portal Filings — Santa Clara County-wide.</strong>
+    For each name, click "Verify Palo Alto?" to check if they owned a Palo Alto home.
+    Typically takes 1–2 minutes to scan.
+  </div>
+  {% for lead in court_leads %}
+  <div class="lead-card" style="--color: #3B82F6;">
+    <div class="lead-address">
+      Estate of <strong>{{ lead.owner_name or "Unknown" }}</strong>
+    </div>
+    <div class="lead-owner">
+      <span class="tag" style="--color:#3B82F6;">Probate Filing</span>
+      {% if lead.filing_date %}Filed: {{ lead.filing_date }}&nbsp;·&nbsp;{% endif %}
+      {% if lead.case_number %}Case #{{ lead.case_number }}&nbsp;·&nbsp;{% endif %}
+      City on record: {{ lead.city or "Unknown" }}
+    </div>
+    <div class="lead-grid">
+      <div class="lead-field">
+        <div class="lead-field-label">Contact</div>
+        <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+      </div>
+      <div class="lead-field">
+        <div class="lead-field-label">Role</div>
+        <div class="lead-field-value">{{ lead.contact_role or "—" }}</div>
+      </div>
+      {% if lead.contact_phone %}
+      <div class="lead-field">
+        <div class="lead-field-label">Phone</div>
+        <div class="lead-field-value"><a href="tel:{{ lead.contact_phone }}">{{ lead.contact_phone }}</a></div>
+      </div>
+      {% endif %}
+      <div class="lead-field" style="grid-column: 1 / -1;">
+        <div class="lead-field-label">Verify Palo Alto Ownership — click one:</div>
+        <div class="lead-field-value" style="margin-top:6px;">
+          <a href="{{ lead.google_search_url }}" target="_blank"
+             style="display:inline-block; background:#3B82F6; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none; margin-right:8px;">
+            🔍 Google: "{{ lead.owner_name }}" Palo Alto property
+          </a>
+          <a href="https://www.sccassessor.org/apps/realpropertysearch.aspx" target="_blank"
+             style="display:inline-block; background:#6B7280; color:white; padding:6px 14px;
+                    border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+            County Assessor Search →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% if lead.extra_info %}
+    <div class="extra-info">{{ lead.extra_info }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+{% else %}
+  <div class="no-leads">No new probate / obituary leads this week.</div>
+{% endif %}
+
+
+<!-- ── Pre-Foreclosure leads ── -->
+<div class="section-header" style="--color: #EF4444;">
+  <div class="section-dot"></div>
+  <div class="section-title">Pre-Foreclosure (Notice of Default)</div>
+  <div class="section-count">{{ leads_by_type.foreclosure | length }}</div>
+</div>
+
+{% if leads_by_type.foreclosure %}
+  {% for lead in leads_by_type.foreclosure %}
+  <div class="lead-card" style="--color: #EF4444;">
+    <div class="lead-address">{{ lead.address or "Address on file" }}</div>
+    <div class="lead-owner">
+      <span class="tag" style="--color:#EF4444;">NOD</span>
+      Owner: <strong>{{ lead.owner_name or "—" }}</strong>
+      {% if lead.filing_date %}&nbsp;·&nbsp; Filed: {{ lead.filing_date }}{% endif %}
+      {% if lead.doc_number %}&nbsp;·&nbsp; Doc #: {{ lead.doc_number }}{% endif %}
+    </div>
+    <div class="lead-grid">
+      <div class="lead-field">
+        <div class="lead-field-label">Contact (Trustee)</div>
+        <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+      </div>
+      <div class="lead-field">
+        <div class="lead-field-label">Phone</div>
+        <div class="lead-field-value">
+          {% if lead.contact_phone %}
+            <a href="tel:{{ lead.contact_phone }}">{{ lead.contact_phone }}</a>
+          {% else %}
+            <a href="{{ lead.google_search_url }}" target="_blank">Search for owner phone</a>
+          {% endif %}
+        </div>
+      </div>
+      {% if lead.assessed_value %}
+      <div class="lead-field">
+        <div class="lead-field-label">Assessed Value</div>
+        <div class="lead-field-value">{{ lead.assessed_value }}</div>
+      </div>
+      {% endif %}
+      {% if lead.amount_owed %}
+      <div class="lead-field">
+        <div class="lead-field-label">Amount in Default</div>
+        <div class="lead-field-value">{{ lead.amount_owed }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if lead.extra_info %}
+    <div class="extra-info">{{ lead.extra_info }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="no-leads">No new pre-foreclosure leads this week.</div>
+{% endif %}
+
+
+<!-- ── Tax Delinquent leads ── -->
+<div class="section-header" style="--color: #F59E0B;">
+  <div class="section-dot"></div>
+  <div class="section-title">Tax Delinquent Properties</div>
+  <div class="section-count">{{ leads_by_type.tax_default | length }}</div>
+</div>
+
+{% if leads_by_type.tax_default %}
+  {% for lead in leads_by_type.tax_default %}
+  <div class="lead-card" style="--color: #F59E0B;">
+    <div class="lead-address">{{ lead.address or "Address on file" }}</div>
+    <div class="lead-owner">
+      <span class="tag" style="--color:#F59E0B;">Tax Default</span>
+      Owner: <strong>{{ lead.owner_name or "—" }}</strong>
+      {% if lead.filing_date %}&nbsp;·&nbsp; Since: {{ lead.filing_date }}{% endif %}
+    </div>
+    <div class="lead-grid">
+      <div class="lead-field">
+        <div class="lead-field-label">Owner / Contact</div>
+        <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+      </div>
+      <div class="lead-field">
+        <div class="lead-field-label">Phone (skip trace)</div>
+        <div class="lead-field-value">
+          <a href="{{ lead.google_search_url }}" target="_blank">Search for phone</a>
+        </div>
+      </div>
+      {% if lead.amount_owed %}
+      <div class="lead-field">
+        <div class="lead-field-label">Tax Amount Owed</div>
+        <div class="lead-field-value">{{ lead.amount_owed }}</div>
+      </div>
+      {% endif %}
+      {% if lead.assessed_value %}
+      <div class="lead-field">
+        <div class="lead-field-label">Assessed Value</div>
+        <div class="lead-field-value">{{ lead.assessed_value }}</div>
+      </div>
+      {% endif %}
+      {% if lead.apn %}
+      <div class="lead-field">
+        <div class="lead-field-label">APN</div>
+        <div class="lead-field-value">{{ lead.apn }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if lead.extra_info %}
+    <div class="extra-info">{{ lead.extra_info }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="no-leads">No new tax-delinquent leads this week.</div>
+{% endif %}
+
+
+<!-- ── Divorce leads ── -->
+{% if leads_by_type.divorce %}
+<div class="section-header" style="--color: #8B5CF6;">
+  <div class="section-dot"></div>
+  <div class="section-title">Divorce / Dissolution</div>
+  <div class="section-count">{{ leads_by_type.divorce | length }}</div>
+</div>
+
+  {% for lead in leads_by_type.divorce %}
+  <div class="lead-card" style="--color: #8B5CF6;">
+    <div class="lead-address">{{ lead.address or "Cross-reference Assessor for address" }}</div>
+    <div class="lead-owner">
+      <span class="tag" style="--color:#8B5CF6;">Dissolution</span>
+      Parties: <strong>{{ lead.owner_name or "—" }}</strong>
+      {% if lead.filing_date %}&nbsp;·&nbsp; Filed: {{ lead.filing_date }}{% endif %}
+      {% if lead.case_number %}&nbsp;·&nbsp; Case: {{ lead.case_number }}{% endif %}
+    </div>
+    <div class="lead-grid">
+      <div class="lead-field">
+        <div class="lead-field-label">Attorney Contact</div>
+        <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+      </div>
+      <div class="lead-field">
+        <div class="lead-field-label">Phone</div>
+        <div class="lead-field-value">
+          {% if lead.contact_phone %}
+            <a href="tel:{{ lead.contact_phone }}">{{ lead.contact_phone }}</a>
+          {% else %}
+            <a href="{{ lead.google_search_url }}" target="_blank">Search for attorney</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% if lead.extra_info %}
+    <div class="extra-info">{{ lead.extra_info }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% endif %}
+
+
+<!-- ── Manual Source Checklist ── -->
+<div class="scripts-section" style="border-left: 5px solid #10B981; margin-top: 32px;">
+  <h2 style="color: #065F46;">📋 5-Minute Manual Source Checklist</h2>
+  <p style="font-size: 13px; color: #555; margin-bottom: 16px;">
+    The automated scrapers run every Sunday but the county websites block robot access.
+    These 3 links take <strong>under 5 minutes total</strong> each week —
+    then use <code>python main.py --import-csv FILE --type TYPE</code> to add any leads you find.
+  </p>
+
+  <div style="background:#f0fdf4; border-radius:8px; padding:16px 20px; margin-bottom:12px; border-left:4px solid #10B981;">
+    <div style="font-weight:700; font-size:14px; color:#065F46; margin-bottom:6px;">
+      1. PROBATE — Santa Clara Superior Court
+    </div>
+    <p style="font-size:13px; color:#333; margin-bottom:8px;">
+      Search for new probate cases filed in the last 7 days.
+    </p>
+    <a href="https://portal.scscourt.org/search" target="_blank"
+       style="display:inline-block; background:#10B981; color:white; font-size:13px;
+              font-weight:600; padding:7px 16px; border-radius:6px; text-decoration:none;">
+      Open Court Portal →
+    </a>
+    <p style="font-size:12px; color:#666; margin-top:8px;">
+      Steps: Click "Case Type Search" → Case Type: <strong>Probate (PR)</strong> →
+      Date Range: last 7 days → Search. Export or copy the list.
+      Download as CSV if available, then:
+      <code>python main.py --import-csv FILE --type probate</code>
+    </p>
+  </div>
+
+  <div style="background:#fff7ed; border-radius:8px; padding:16px 20px; margin-bottom:12px; border-left:4px solid #F59E0B;">
+    <div style="font-weight:700; font-size:14px; color:#92400E; margin-bottom:6px;">
+      2. PRE-FORECLOSURE (NOD) — Santa Clara Recorder
+    </div>
+    <p style="font-size:13px; color:#333; margin-bottom:8px;">
+      Search for Notices of Default recorded in the last 7 days.
+    </p>
+    <a href="https://clerkrecorder.santaclaracounty.gov/official-records/records-search" target="_blank"
+       style="display:inline-block; background:#F59E0B; color:white; font-size:13px;
+              font-weight:600; padding:7px 16px; border-radius:6px; text-decoration:none;">
+      Open Recorder Search →
+    </a>
+    <p style="font-size:12px; color:#666; margin-top:8px;">
+      If the website still doesn't work online, visit the office in person:
+      <strong>70 W. Hedding St., San Jose, CA 95110</strong> (Mon–Fri 8am–4pm).
+      Ask for "NOD/NTS documents recorded in Palo Alto this week."
+      Or: search <a href="https://app.propstream.com" target="_blank">PropStream free trial</a>
+      for the week.
+    </p>
+  </div>
+
+  <div style="background:#eff6ff; border-radius:8px; padding:16px 20px; margin-bottom:12px; border-left:4px solid #3B82F6;">
+    <div style="font-weight:700; font-size:14px; color:#1E40AF; margin-bottom:6px;">
+      3. TAX DELINQUENT — DTAC Auction List
+    </div>
+    <p style="font-size:13px; color:#333; margin-bottom:8px;">
+      Check if any Palo Alto properties are on the current tax-default auction list.
+    </p>
+    <a href="https://dtac.santaclaracounty.gov/taxes/public-auction-tax-defaulted-properties" target="_blank"
+       style="display:inline-block; background:#3B82F6; color:white; font-size:13px;
+              font-weight:600; padding:7px 16px; border-radius:6px; text-decoration:none;">
+      Open DTAC Auction Page →
+    </a>
+    <p style="font-size:12px; color:#666; margin-top:8px;">
+      The county posts a new list before each annual auction (usually Feb–May).
+      If there's a downloadable CSV/Excel, download it and run:
+      <code>python main.py --import-csv FILE --type tax_default</code>
+    </p>
+  </div>
+
+  <div style="background:#fdf4ff; border-radius:8px; padding:16px 20px; border-left:4px solid #8B5CF6;">
+    <div style="font-weight:700; font-size:14px; color:#5B21B6; margin-bottom:6px;">
+      BONUS: BANKRUPTCY FILINGS (automated if CourtListener token is set)
+    </div>
+    <p style="font-size:12px; color:#555;">
+      Chapter 13 bankruptcy = homeowner trying to stop foreclosure = highly motivated seller.
+      This source runs automatically if you've added a free CourtListener token to .env.
+      Setup (2 min): Go to
+      <a href="https://www.courtlistener.com/register/" target="_blank">courtlistener.com/register</a>
+      → free signup → Profile → API Keys → Add Token → paste in .env as
+      <code>COURTLISTENER_TOKEN=your_token</code>
+    </p>
+  </div>
+</div>
+
+
+<!-- ── Quick-reference scripts ── -->
+<div class="scripts-section">
+  <h2>📞 Quick-Reference Call Scripts</h2>
+
+  <div class="script-block" style="--color: #3B82F6;">
+    <h3>PROBATE / ESTATE</h3>
+    <p>
+      "Hi, may I speak with [Executor Name]? … Hi [Name], my name is [Your Name] and I'm a
+      real estate investor in Palo Alto. I understand you may be handling the estate of [Decedent].
+      I'm not a realtor — I work directly with families who need to settle estates quickly without
+      the hassle of listing on the open market. I can make a fair all-cash offer that closes in
+      as little as 10–14 days and I cover all closing costs. Would you be open to a quick
+      10-minute conversation to see if this might work for the estate?"
+    </p>
+  </div>
+
+  <div class="script-block" style="--color: #EF4444;">
+    <h3>PRE-FORECLOSURE (NOD)</h3>
+    <p>
+      "Hi, is this [Owner Name]? … Hi, my name is [Your Name]. I'm a real estate investor
+      here in Palo Alto and I noticed that a Notice of Default was recently filed on your property
+      at [Address]. I completely understand this can be a stressful situation — I'm not here to
+      pressure you at all. I work with homeowners who'd rather sell privately and walk away with
+      cash in hand rather than go through foreclosure. If you're open to it, I can offer a
+      quick, no-obligation cash offer. Would you have 10 minutes to talk?"
+    </p>
+  </div>
+
+  <div class="script-block" style="--color: #F59E0B;">
+    <h3>TAX DELINQUENT</h3>
+    <p>
+      "Hi, is this [Owner Name]? … Hi, my name is [Your Name] and I'm a real estate investor
+      in Palo Alto. I came across your property at [Address] — it looks like there may be some
+      outstanding property taxes. I work with owners who'd like to resolve that situation by
+      selling the property for cash and walking away clean, without any of the ongoing costs.
+      I can close quickly and pay off the tax balance at closing. Would you be open to
+      chatting for just a few minutes?"
+    </p>
+  </div>
+
+  <div class="script-block" style="--color: #8B5CF6;">
+    <h3>DIVORCE / DISSOLUTION</h3>
+    <p>
+      "Hi, this is [Your Name] — am I speaking with [Attorney Name]? … I'm a cash real estate
+      investor in Palo Alto. I work with attorneys on dissolution cases involving real property.
+      If your client has a home in Palo Alto that needs to be liquidated as part of the settlement,
+      I can provide a quick all-cash offer that closes in 14–21 days, which makes it very clean
+      for the court and both parties. Would you mind if I sent over a one-pager on how this works?"
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated {{ generated_at }} &nbsp;·&nbsp; Palo Alto Motivated Seller Lead System
+</div>
+
+</body>
+</html>
