@@ -35,6 +35,9 @@ from scrapers.obituary import ObituaryScraper
 from scrapers.tax_default import TaxDefaultScraper
 from scrapers.bankruptcy import BankruptcyScraper
 
+# ── Ensure data/ directory exists (needed on fresh servers / GitHub Actions) ──
+os.makedirs(os.path.join(config.BASE_DIR, "data", "reports"), exist_ok=True)
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
