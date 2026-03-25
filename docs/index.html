@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palo Alto Lead History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & base ───────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 32px 24px;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.3px; }
+    header p  { margin-top: 6px; font-size: 0.95rem; color: #a5b4fc; opacity: 0.9; }
+
+    /* ── Main layout ─────────────────────────────────────────────────────────── */
+    main { max-width: 1280px; margin: 0 auto; padding: 28px 24px 60px; }
+
+    /* ── Cards row ───────────────────────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 22px 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-top: 4px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-card .label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #6b7280;
+    }
+    .stat-card .value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-card.probate     { border-top-color: #3B82F6; }
+    .stat-card.foreclosure { border-top-color: #EF4444; }
+    .stat-card.tax_default { border-top-color: #F59E0B; }
+    .stat-card.divorce     { border-top-color: #8B5CF6; }
+    .stat-card.obituary    { border-top-color: #10B981; }
+
+    /* ── Panel (white card wrapper) ─────────────────────────────────────────── */
+    .panel {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 24px 26px;
+      margin-bottom: 24px;
+    }
+    .panel h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 18px;
+    }
+
+    /* ── Chart ───────────────────────────────────────────────────────────────── */
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+    .chart-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 140px;
+      color: #9ca3af;
+      font-size: 0.92rem;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 220px;
+      padding: 9px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus { border-color: #6366f1; }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1.5px solid #d1d5db;
+      background: #fff;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .tab-btn:hover  { background: #f3f4f6; }
+    .tab-btn.active { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+
+    /* ── Row count ───────────────────────────────────────────────────────────── */
+    .row-count {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    /* ── Table ───────────────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    thead th {
+      background: #f9fafb;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6b7280;
+      border-bottom: 1.5px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid #f3f4f6;
+      border-left: 4px solid transparent;
+      transition: background 0.1s;
+    }
+    tbody tr:hover { background: #f9fafb; }
+    tbody td {
+      padding: 10px 14px;
+      vertical-align: middle;
+    }
+
+    /* Row left-border colours by type */
+    tbody tr[data-type="probate"]     { border-left-color: #3B82F6; }
+    tbody tr[data-type="foreclosure"] { border-left-color: #EF4444; }
+    tbody tr[data-type="tax_default"] { border-left-color: #F59E0B; }
+    tbody tr[data-type="divorce"]     { border-left-color: #8B5CF6; }
+    tbody tr[data-type="obituary"]    { border-left-color: #10B981; }
+
+    /* ── Badges ──────────────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-probate     { background: #eff6ff; color: #2563eb; }
+    .badge-foreclosure { background: #fef2f2; color: #dc2626; }
+    .badge-tax_default { background: #fffbeb; color: #d97706; }
+    .badge-divorce     { background: #f5f3ff; color: #7c3aed; }
+    .badge-obituary    { background: #ecfdf5; color: #059669; }
+    .badge-default     { background: #f3f4f6; color: #374151; }
+
+    .repeat-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #92400e;
+      white-space: nowrap;
+    }
+
+    /* ── Action buttons ──────────────────────────────────────────────────────── */
+    .actions { display: flex; gap: 6px; }
+    .btn-action {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1.5px solid #d1d5db;
+      background: #fff;
+      font-size: 0.78rem;
+      cursor: pointer;
+      white-space: nowrap;
+      color: #374151;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .btn-action:hover { background: #f3f4f6; border-color: #9ca3af; }
+
+    /* ── Empty state ─────────────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: #9ca3af;
+    }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* ── Toast ───────────────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Loading / error ─────────────────────────────────────────────────────── */
+    #loading-msg {
+      text-align: center;
+      padding: 60px;
+      color: #9ca3af;
+      font-size: 0.95rem;
+    }
+    #error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#128205; Palo Alto Lead History</h1>
+  <p id="header-sub">Loading data&hellip;</p>
+</header>
+
+<main>
+  <div id="error-msg"></div>
+  <div id="loading-msg">Loading dashboard&hellip;</div>
+
+  <div id="app" style="display:none;">
+
+    <!-- Stat cards -->
+    <div class="stats-row" id="stats-row"></div>
+
+    <!-- Weekly trend chart -->
+    <div class="panel">
+      <h2>Weekly New Leads</h2>
+      <div id="chart-area">
+        <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Lead table -->
+    <div class="panel">
+      <h2>All Leads</h2>
+
+      <div class="toolbar">
+        <input
+          id="search-box"
+          class="search-box"
+          type="search"
+          placeholder="Search by name, address&hellip;"
+          autocomplete="off"
+        />
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="tab-btn active" data-type="all">All</button>
+          <button class="tab-btn" data-type="probate">Probate</button>
+          <button class="tab-btn" data-type="foreclosure">Foreclosure</button>
+          <button class="tab-btn" data-type="tax_default">Tax Default</button>
+          <button class="tab-btn" data-type="divorce">Divorce</button>
+        </div>
+      </div>
+
+      <div class="row-count" id="row-count"></div>
+
+      <div class="table-wrap">
+        <table id="leads-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Filed</th>
+              <th>First Seen</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leads-tbody"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none;">
+          <p>No leads collected yet. The first report will populate this dashboard.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- #app -->
+</main>
+
+<div id="toast">Copied!</div>
+
+<script>
+  /* ── Constants ─────────────────────────────────────────────────────────── */
+  const TYPE_LABELS = {
+    probate:     'Probate',
+    foreclosure: 'Foreclosure',
+    tax_default: 'Tax Default',
+    divorce:     'Divorce',
+    obituary:    'Obituary',
+  };
+
+  const TYPE_COLORS = {
+    probate:     '#3B82F6',
+    foreclosure: '#EF4444',
+    tax_default: '#F59E0B',
+    divorce:     '#8B5CF6',
+    obituary:    '#10B981',
+  };
+
+  /* ── State ─────────────────────────────────────────────────────────────── */
+  let allLeads = [];
+  let activeFilter = 'all';
+  let searchQuery  = '';
+
+  /* ── Helpers ───────────────────────────────────────────────────────────── */
+  function fmtDate(val) {
+    if (!val) return '—';
+    // Accept "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
+    const d = val.slice(0, 10);
+    const [y, m, day] = d.split('-');
+    if (!y || !m || !day) return val;
+    return `${m}/${day}/${y}`;
+  }
+
+  function badgeClass(type) {
+    return `badge badge-${type || 'default'}`;
+  }
+
+  function typeLabel(type) {
+    return TYPE_LABELS[type] || (type ? type.replace(/_/g, ' ') : 'Unknown');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied!'));
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('Copied!');
+    }
+  }
+
+  /* ── Render stat cards ─────────────────────────────────────────────────── */
+  function renderStats(leads) {
+    const counts = {};
+    leads.forEach(l => {
+      const t = l.lead_type || 'unknown';
+      counts[t] = (counts[t] || 0) + 1;
+    });
+
+    const order = ['probate', 'foreclosure', 'tax_default', 'divorce', 'obituary'];
+    const container = document.getElementById('stats-row');
+    container.innerHTML = '';
+
+    order.forEach(type => {
+      if (!counts[type]) return;
+      const card = document.createElement('div');
+      card.className = `stat-card ${type}`;
+      card.innerHTML = `
+        <span class="label">${typeLabel(type)}</span>
+        <span class="value" style="color:${TYPE_COLORS[type] || '#374151'}">${counts[type]}</span>
+      `;
+      container.appendChild(card);
+    });
+
+    // Catch-all for unexpected types
+    Object.keys(counts).forEach(type => {
+      if (!order.includes(type)) {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.innerHTML = `
+          <span class="label">${typeLabel(type)}</span>
+          <span class="value">${counts[type]}</span>
+        `;
+        container.appendChild(card);
+      }
+    });
+  }
+
+  /* ── Render weekly chart ───────────────────────────────────────────────── */
+  let chartInstance = null;
+
+  function renderChart(runs) {
+    const area = document.getElementById('chart-area');
+
+    if (!runs || runs.length === 0) {
+      area.innerHTML = '<div class="chart-empty">No run history yet.</div>';
+      return;
+    }
+
+    // Sort ascending by date
+    const sorted = [...runs].sort((a, b) => (a.run_date > b.run_date ? 1 : -1));
+    const labels = sorted.map(r => fmtDate(r.run_date));
+    const data   = sorted.map(r => r.new_leads || 0);
+
+    area.innerHTML = '<div class="chart-wrap"><canvas id="trend-chart"></canvas></div>';
+    const ctx = document.getElementById('trend-chart').getContext('2d');
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'New Leads',
+          data,
+          backgroundColor: '#6366f1',
+          borderRadius: 5,
+          borderSkipped: false,
+          hoverBackgroundColor: '#4f46e5',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: items => `Week of ${items[0].label}`,
+              label: item => ` ${item.raw} new lead${item.raw === 1 ? '' : 's'}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 }, color: '#6b7280' },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f3f4f6' },
+            ticks: {
+              stepSize: 1,
+              font: { size: 11 },
+              color: '#6b7280',
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /* ── Render lead table ─────────────────────────────────────────────────── */
+  function getFilteredLeads() {
+    return allLeads.filter(lead => {
+      const matchType = activeFilter === 'all' || lead.lead_type === activeFilter;
+      if (!matchType) return false;
+
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (lead.owner_name   || '').toLowerCase().includes(q) ||
+        (lead.address      || '').toLowerCase().includes(q) ||
+        (lead.contact_name || '').toLowerCase().includes(q)
+      );
+    });
+  }
+
+  function renderTable() {
+    const filtered = getFilteredLeads();
+    const tbody = document.getElementById('leads-tbody');
+    const emptyState = document.getElementById('empty-state');
+    const rowCount = document.getElementById('row-count');
+
+    rowCount.textContent = `Showing ${filtered.length} of ${allLeads.length} lead${allLeads.length === 1 ? '' : 's'}`;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.style.display = '';
+      if (allLeads.length === 0) {
+        emptyState.querySelector('p').textContent =
+          'No leads collected yet. The first report will populate this dashboard.';
+      } else {
+        emptyState.querySelector('p').textContent = 'No leads match the current search / filter.';
+      }
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(lead => {
+      const type       = lead.lead_type || '';
+      const badgeCls   = badgeClass(type);
+      const typeText   = typeLabel(type);
+      const ownerName  = lead.owner_name  || '—';
+      const address    = lead.address     || '—';
+      const filed      = fmtDate(lead.filing_date);
+      const firstSeen  = fmtDate(lead.first_seen);
+      const times      = lead.times_reported || 1;
+
+      const repeatBadge = times > 1
+        ? `<span class="repeat-badge">Seen ${times} weeks</span>`
+        : '';
+
+      const googleBtn = lead.google_search_url
+        ? `<a class="btn-action" href="${escHtml(lead.google_search_url)}" target="_blank" rel="noopener">&#128269; Google</a>`
+        : '';
+
+      const copyBtn = `<button class="btn-action" onclick="copyText(${JSON.stringify(ownerName)})">&#128203; Copy</button>`;
+
+      return `
+        <tr data-type="${escHtml(type)}">
+          <td><span class="${escHtml(badgeCls)}">${escHtml(typeText)}</span></td>
+          <td>${escHtml(ownerName)}${repeatBadge}</td>
+          <td>${escHtml(address)}</td>
+          <td>${escHtml(filed)}</td>
+          <td>${escHtml(firstSeen)}</td>
+          <td><div class="actions">${googleBtn}${copyBtn}</div></td>
+        </tr>
+      `.trim();
+    }).join('');
+  }
+
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Event wiring ──────────────────────────────────────────────────────── */
+  function wireEvents() {
+    document.getElementById('search-box').addEventListener('input', e => {
+      searchQuery = e.target.value.trim();
+      renderTable();
+    });
+
+    document.getElementById('filter-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.type;
+      renderTable();
+    });
+  }
+
+  /* ── Header subtitle ───────────────────────────────────────────────────── */
+  function updateHeaderSub(leads, runs) {
+    const total = leads.length;
+    let lastUpdated = '';
+    if (runs && runs.length > 0) {
+      const latest = runs.reduce((a, b) => (a.run_date > b.run_date ? a : b));
+      lastUpdated = ` &bull; Last run: ${fmtDate(latest.run_date)}`;
+    }
+    document.getElementById('header-sub').innerHTML =
+      `${total} total lead${total === 1 ? '' : 's'}${lastUpdated}`;
+  }
+
+  /* ── Boot ──────────────────────────────────────────────────────────────── */
+  async function init() {
+    const loadingEl = document.getElementById('loading-msg');
+    const errorEl   = document.getElementById('error-msg');
+    const appEl     = document.getElementById('app');
+
+    try {
+      const [leadsResp, runsResp] = await Promise.all([
+        fetch('./leads.json'),
+        fetch('./runs.json'),
+      ]);
+
+      if (!leadsResp.ok) throw new Error(`Could not load leads.json (HTTP ${leadsResp.status})`);
+      if (!runsResp.ok)  throw new Error(`Could not load runs.json (HTTP ${runsResp.status})`);
+
+      const leads = await leadsResp.json();
+      const runs  = await runsResp.json();
+
+      allLeads = Array.isArray(leads) ? leads : [];
+      const runsArr = Array.isArray(runs) ? runs : [];
+
+      loadingEl.style.display = 'none';
+      appEl.style.display = '';
+
+      updateHeaderSub(allLeads, runsArr);
+      renderStats(allLeads);
+      renderChart(runsArr);
+      renderTable();
+      wireEvents();
+
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      errorEl.style.display = '';
+      errorEl.textContent = `Error loading dashboard data: ${err.message}`;
+      document.getElementById('header-sub').textContent = 'Failed to load data';
+      console.error(err);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
