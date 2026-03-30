@@ -68,24 +68,28 @@ class BankruptcyScraper(BaseScraper):
         start_str = start_date.strftime("%Y-%m-%d")
 
         logger.info(
-            "Searching CourtListener for Chapter 13/7 bankruptcy filings since %s "
-            "(Northern District CA — covers Palo Alto)...",
+            "Searching CourtListener for Palo Alto bankruptcy filings since %s...",
             start_str,
         )
 
         raw_dockets = self._fetch_dockets(start_str, token)
-        logger.info("CourtListener returned %d bankruptcy dockets", len(raw_dockets))
+        logger.info("CourtListener returned %d Palo Alto bankruptcy dockets", len(raw_dockets))
 
         leads = [lead for d in raw_dockets if (lead := self._to_lead(d))]
-        logger.info("Bankruptcy scraper: %d leads (cross-reference with property records)", len(leads))
+        logger.info("Bankruptcy scraper: %d leads", len(leads))
         return leads
 
     # ── API calls ─────────────────────────────────────────────────────────────
 
     def _fetch_dockets(self, filed_after: str, token: Optional[str]) -> List[dict]:
-        """Fetch recent bankruptcy dockets from CourtListener."""
-        # Use minimal, API-friendly headers — the browser-mimicking headers from
-        # config.HEADERS cause CourtListener to hang/timeout.
+        """
+        Search CourtListener for bankruptcy cases that mention Palo Alto.
+
+        Uses the full-text search endpoint rather than the dockets list so we
+        only get cases where 'Palo Alto' appears somewhere in the filing —
+        much more targeted than fetching all ~140 Northern District CA filings
+        per week and hoping one is from Palo Alto.
+        """
         headers = {
             "User-Agent": "Mozilla/5.0",
             "Accept": "application/json",
@@ -94,19 +98,18 @@ class BankruptcyScraper(BaseScraper):
             headers["Authorization"] = f"Token {token}"
 
         dockets = []
-        url = f"{COURTLISTENER_API}/dockets/"
+        url = f"{COURTLISTENER_API}/search/"
 
         params = {
+            "q": '"Palo Alto"',   # only cases mentioning Palo Alto
+            "type": "d",          # dockets
             "court": COURT_CODE,
-            "date_filed__gte": filed_after,
-            "order_by": "-date_filed",
-            "page_size": 100,
+            "filed_after": filed_after,
+            "order_by": "dateFiled desc",
+            "page_size": 50,
         }
 
-        # CourtListener API is slow (often 50-70 seconds) and has rate limits
-        # on free tier. Use a generous timeout; the weekly scheduler only calls
-        # this once per week so throttling won't be an issue.
-        CL_TIMEOUT = max(config.REQUEST_TIMEOUT, 120)
+        CL_TIMEOUT = max(config.REQUEST_TIMEOUT, 60)
 
         try:
             while url:
@@ -131,11 +134,10 @@ class BankruptcyScraper(BaseScraper):
                 results = data.get("results", [])
                 dockets.extend(results)
 
-                # Pagination
                 url = data.get("next")
-                params = None  # next URL already has params embedded
+                params = None
 
-                if len(dockets) >= 500:
+                if len(dockets) >= 100:
                     break
 
         except requests.RequestException as exc:
@@ -145,25 +147,48 @@ class BankruptcyScraper(BaseScraper):
 
     # ── Lead builder ──────────────────────────────────────────────────────────
 
+    # Business entity keywords — skip these, we only want individual homeowners
+    BUSINESS_KEYWORDS = re.compile(
+        r"\b(LLC|Inc|Corp|Ltd|LP|LLP|Law Offices?|Attorney|"
+        r"Properties|Holdings|Group|Partners|Ventures|Trust(?:ee)?|"
+        r"Archbishop|Diocese|Church|Association|Foundation|Services|"
+        r"Management|Solutions|Technologies|Enterprises|Industries)\b"
+        r"|P\.C\.|P\.A\.|L\.P\.|L\.L\.C\.",
+        re.IGNORECASE,
+    )
+
     def _to_lead(self, docket: dict) -> Optional[dict]:
-        """Convert a bankruptcy docket to a motivated seller lead."""
-        case_name = docket.get("case_name", "").strip()
+        """Convert a bankruptcy search result to a motivated seller lead."""
+        # Search API uses caseName; dockets API uses case_name
+        case_name = (docket.get("caseName") or docket.get("case_name") or "").strip()
         if not case_name:
             return None
 
         # Bankruptcy case names are "In re John Smith" or "In re John & Jane Smith"
-        # Extract the debtor name
         debtor = re.sub(r"^in re\s+", "", case_name, flags=re.IGNORECASE).strip()
         if not debtor:
             debtor = case_name
 
-        case_number = docket.get("docket_number", "").strip()
-        filed_date = (docket.get("date_filed") or "").strip()
+        # Skip businesses — we only want individual homeowners
+        if self.BUSINESS_KEYWORDS.search(debtor):
+            logger.debug("Skipping business entity: %s", debtor)
+            return None
+
+        # Search API uses docketNumber; dockets API uses docket_number
+        case_number = (docket.get("docketNumber") or docket.get("docket_number") or "").strip()
+        # Search API uses dateFiled; dockets API uses date_filed
+        filed_date = (docket.get("dateFiled") or docket.get("date_filed") or "").strip()
         chapter = self._extract_chapter(case_name, docket)
 
+        # Chapter 11 is almost exclusively business reorganization — skip it
+        if chapter == "11":
+            logger.debug("Skipping Chapter 11 (business): %s", debtor)
+            return None
+
+        absolute_url = docket.get("absolute_url") or ""
         court_url = (
-            f"https://www.courtlistener.com{docket['absolute_url']}"
-            if docket.get("absolute_url")
+            f"https://www.courtlistener.com{absolute_url}"
+            if absolute_url
             else "https://www.courtlistener.com/recap/"
         )
 
