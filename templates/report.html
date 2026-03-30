@@ -347,41 +347,88 @@
 {% if leads_by_type.foreclosure %}
   {% for lead in leads_by_type.foreclosure %}
   <div class="lead-card" style="--color: #EF4444;">
-    <div class="lead-address">{{ lead.address or "Address on file" }}</div>
-    <div class="lead-owner">
-      <span class="tag" style="--color:#EF4444;">NOD</span>
-      Owner: <strong>{{ lead.owner_name or "—" }}</strong>
-      {% if lead.filing_date %}&nbsp;·&nbsp; Filed: {{ lead.filing_date }}{% endif %}
-      {% if lead.doc_number %}&nbsp;·&nbsp; Doc #: {{ lead.doc_number }}{% endif %}
-    </div>
-    <div class="lead-grid">
-      <div class="lead-field">
-        <div class="lead-field-label">Contact (Trustee)</div>
-        <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+
+    {% if lead.address %}
+      {# NOD / recorder lead — has a confirmed address #}
+      <div class="lead-address">{{ lead.address }}</div>
+      <div class="lead-owner">
+        <span class="tag" style="--color:#EF4444;">NOD</span>
+        Owner: <strong>{{ lead.owner_name or "—" }}</strong>
+        {% if lead.filing_date %}&nbsp;·&nbsp; Filed: {{ lead.filing_date }}{% endif %}
+        {% if lead.doc_number %}&nbsp;·&nbsp; Doc #: {{ lead.doc_number }}{% endif %}
       </div>
-      <div class="lead-field">
-        <div class="lead-field-label">Phone</div>
-        <div class="lead-field-value">
-          {% if lead.contact_phone %}
-            <a href="tel:{{ lead.contact_phone }}">{{ lead.contact_phone }}</a>
-          {% else %}
-            <a href="{{ lead.google_search_url }}" target="_blank">Search for owner phone</a>
-          {% endif %}
+      <div class="lead-grid">
+        <div class="lead-field">
+          <div class="lead-field-label">Contact (Trustee)</div>
+          <div class="lead-field-value">{{ lead.contact_name or "—" }}</div>
+        </div>
+        <div class="lead-field">
+          <div class="lead-field-label">Phone</div>
+          <div class="lead-field-value">
+            {% if lead.contact_phone %}
+              <a href="tel:{{ lead.contact_phone }}">{{ lead.contact_phone }}</a>
+            {% else %}
+              <a href="{{ lead.google_search_url }}" target="_blank">Search for owner phone</a>
+            {% endif %}
+          </div>
+        </div>
+        {% if lead.assessed_value %}
+        <div class="lead-field">
+          <div class="lead-field-label">Assessed Value</div>
+          <div class="lead-field-value">{{ lead.assessed_value }}</div>
+        </div>
+        {% endif %}
+        {% if lead.amount_owed %}
+        <div class="lead-field">
+          <div class="lead-field-label">Amount in Default</div>
+          <div class="lead-field-value">{{ lead.amount_owed }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+    {% else %}
+      {# Bankruptcy lead — no address in public records, show lookup links #}
+      <div class="lead-address">
+        <strong>{{ lead.owner_name or "Unknown" }}</strong>
+      </div>
+      <div class="lead-owner">
+        <span class="tag" style="--color:#EF4444;">Bankruptcy</span>
+        {% if lead.case_number %}Case {{ lead.case_number }}&nbsp;·&nbsp;{% endif %}
+        {% if lead.filing_date %}Filed: {{ lead.filing_date }}{% endif %}
+      </div>
+      <div class="lead-grid">
+        <div class="lead-field" style="grid-column: 1 / -1;">
+          <div class="lead-field-label">Find address &amp; confirm Palo Alto — click in order:</div>
+          <div class="lead-field-value" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;">
+            {% if lead.tps_url %}
+            <a href="{{ lead.tps_url }}" target="_blank"
+               style="display:inline-block; background:#0EA5E9; color:white; padding:6px 14px;
+                      border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+              🏠 Find Address (TruePeopleSearch)
+            </a>
+            {% endif %}
+            <a href="{{ lead.google_search_url }}" target="_blank"
+               style="display:inline-block; background:#EF4444; color:white; padding:6px 14px;
+                      border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+              🔍 Google: "{{ lead.owner_name }}" Palo Alto property
+            </a>
+            <a href="https://www.sccassessor.org/apps/realpropertysearch.aspx" target="_blank"
+               style="display:inline-block; background:#6B7280; color:white; padding:6px 14px;
+                      border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+              County Assessor →
+            </a>
+            {% if lead.court_url %}
+            <a href="{{ lead.court_url }}" target="_blank"
+               style="display:inline-block; background:#1a1a2e; color:white; padding:6px 14px;
+                      border-radius:5px; font-size:12px; font-weight:600; text-decoration:none;">
+              ⚖️ Court Filing
+            </a>
+            {% endif %}
+          </div>
         </div>
       </div>
-      {% if lead.assessed_value %}
-      <div class="lead-field">
-        <div class="lead-field-label">Assessed Value</div>
-        <div class="lead-field-value">{{ lead.assessed_value }}</div>
-      </div>
-      {% endif %}
-      {% if lead.amount_owed %}
-      <div class="lead-field">
-        <div class="lead-field-label">Amount in Default</div>
-        <div class="lead-field-value">{{ lead.amount_owed }}</div>
-      </div>
-      {% endif %}
-    </div>
+    {% endif %}
+
     {% if lead.extra_info %}
     <div class="extra-info">{{ lead.extra_info }}</div>
     {% endif %}

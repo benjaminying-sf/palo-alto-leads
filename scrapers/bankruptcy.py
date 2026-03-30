@@ -27,6 +27,7 @@ but may return some results).
 
 import logging
 import re
+import urllib.parse
 from datetime import datetime, timedelta
 
 import requests
@@ -172,27 +173,37 @@ class BankruptcyScraper(BaseScraper):
             "13": "Chapter 13 (Save-the-Home Plan)",
         }.get(chapter, f"Chapter {chapter}")
 
-        # We don't have the address (it's inside PACER documents) so we
-        # note it requires a quick PACER/address lookup
+        # Address is inside PACER court documents (requires paid access).
+        # Instead we generate one-click lookup links so the user can find
+        # the address and confirm Palo Alto property ownership in ~30 seconds.
+        google_url = (
+            "https://www.google.com/search?q="
+            + urllib.parse.quote_plus(f'"{debtor}" "Palo Alto" property home bankruptcy')
+        )
+        tps_url = (
+            "https://www.truepeoplesearch.com/results?name="
+            + urllib.parse.quote(debtor)
+            + "&citystatezip=Palo+Alto%2C+CA"
+        )
+
         return {
             "lead_type": config.LEAD_TYPE_FORECLOSURE,
-            "address": "",  # Not available from public docket header
+            "address": "",  # Not in public docket header — use lookup links below
             "zip_code": "",
             "owner_name": debtor,
             "contact_name": debtor,
             "contact_phone": "",
             "contact_email": "",
-            "contact_role": "Bankruptcy Debtor (address lookup needed)",
+            "contact_role": "Bankruptcy Debtor",
             "filing_date": filed_date,
             "case_number": case_number,
             "extra_info": (
-                f"{chapter_label} bankruptcy — Northern District CA. "
+                f"{chapter_label} — Northern District CA (covers Palo Alto/Santa Clara County). "
                 f"Case {case_number} filed {filed_date}. "
-                "To confirm Palo Alto property ownership: search debtor name at "
-                "https://eaas.sccgov.org/ (Santa Clara Assessor). "
-                f"Full case: {court_url}"
+                "Use the links below to find their address and confirm Palo Alto property ownership."
             ),
-            "google_search_url": self._google_search_url(debtor, "Palo Alto CA"),
+            "google_search_url": google_url,
+            "tps_url": tps_url,
             "court_url": court_url,
         }
 
