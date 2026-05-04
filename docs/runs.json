@@ -1,5 +1,13 @@
 [
   {
+    "id": 19,
+    "run_date": "2026-05-04",
+    "new_leads": 0,
+    "total_leads": 0,
+    "email_sent": 1,
+    "notes": ""
+  },
+  {
     "id": 1,
     "run_date": "2026-04-27",
     "new_leads": 0,
@@ -8,16 +16,8 @@
     "notes": ""
   },
   {
-    "id": 18,
-    "run_date": "2026-04-27",
-    "new_leads": 0,
-    "total_leads": 1,
-    "email_sent": 1,
-    "notes": ""
-  },
-  {
     "id": 2,
-    "run_date": "2026-04-20",
+    "run_date": "2026-04-27",
     "new_leads": 0,
     "total_leads": 1,
     "email_sent": 1,
@@ -27,13 +27,13 @@
     "id": 3,
     "run_date": "2026-04-20",
     "new_leads": 0,
-    "total_leads": 0,
+    "total_leads": 1,
     "email_sent": 1,
     "notes": ""
   },
   {
     "id": 4,
-    "run_date": "2026-04-13",
+    "run_date": "2026-04-20",
     "new_leads": 0,
     "total_leads": 0,
     "email_sent": 1,
@@ -49,9 +49,9 @@
   },
   {
     "id": 6,
-    "run_date": "2026-04-06",
+    "run_date": "2026-04-13",
     "new_leads": 0,
-    "total_leads": 1,
+    "total_leads": 0,
     "email_sent": 1,
     "notes": ""
   },
@@ -65,6 +65,14 @@
   },
   {
     "id": 8,
+    "run_date": "2026-04-06",
+    "new_leads": 0,
+    "total_leads": 1,
+    "email_sent": 1,
+    "notes": ""
+  },
+  {
+    "id": 9,
     "run_date": "2026-03-30",
     "new_leads": 20,
     "total_leads": 20,
@@ -72,7 +80,7 @@
     "notes": ""
   },
   {
-    "id": 9,
+    "id": 10,
     "run_date": "2026-03-30",
     "new_leads": 63,
     "total_leads": 100,
@@ -80,7 +88,7 @@
     "notes": ""
   },
   {
-    "id": 10,
+    "id": 11,
     "run_date": "2026-03-30",
     "new_leads": 50,
     "total_leads": 154,
@@ -88,7 +96,7 @@
     "notes": ""
   },
   {
-    "id": 11,
+    "id": 12,
     "run_date": "2026-03-30",
     "new_leads": 0,
     "total_leads": 1,
@@ -96,18 +104,10 @@
     "notes": ""
   },
   {
-    "id": 12,
+    "id": 13,
     "run_date": "2026-03-25",
     "new_leads": 1,
     "total_leads": 2,
-    "email_sent": 1,
-    "notes": ""
-  },
-  {
-    "id": 13,
-    "run_date": "2026-03-09",
-    "new_leads": 0,
-    "total_leads": 0,
     "email_sent": 1,
     "notes": ""
   },
@@ -137,6 +137,14 @@
   },
   {
     "id": 17,
+    "run_date": "2026-03-09",
+    "new_leads": 0,
+    "total_leads": 0,
+    "email_sent": 1,
+    "notes": ""
+  },
+  {
+    "id": 18,
     "run_date": "2026-03-08",
     "new_leads": 0,
     "total_leads": 0,
