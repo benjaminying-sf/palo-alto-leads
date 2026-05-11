@@ -74,11 +74,16 @@ def upsert_lead(lead: dict) -> bool:
     """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Build a stable identifier from whatever we have
+    # Build a stable identifier — try specific IDs first, then fall back to
+    # owner_name so that obituary/probate leads (which have no doc/case number
+    # and a generic placeholder address) each get a unique hash.
+    raw_address = lead.get("address", "")
+    placeholder = raw_address.startswith("⚠️") or not raw_address.strip()
     identifier = (
         lead.get("doc_number")
         or lead.get("case_number")
-        or lead.get("address", "")
+        or (None if placeholder else raw_address)
+        or lead.get("owner_name", "")
     )
     lead_hash = make_lead_hash(lead.get("lead_type", "unknown"), identifier)
 
