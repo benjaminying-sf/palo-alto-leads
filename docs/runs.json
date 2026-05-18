@@ -1,6 +1,6 @@
 [
   {
-    "id": 24,
+    "id": 1,
     "run_date": "2026-05-18",
     "new_leads": 2,
     "total_leads": 3,
@@ -8,10 +8,10 @@
     "notes": ""
   },
   {
-    "id": 1,
-    "run_date": "2026-05-11",
-    "new_leads": 0,
-    "total_leads": 1,
+    "id": 25,
+    "run_date": "2026-05-18",
+    "new_leads": 1,
+    "total_leads": 4,
     "email_sent": 1,
     "notes": ""
   },
@@ -26,16 +26,16 @@
   {
     "id": 3,
     "run_date": "2026-05-11",
-    "new_leads": 1,
+    "new_leads": 0,
     "total_leads": 1,
     "email_sent": 1,
     "notes": ""
   },
   {
     "id": 4,
-    "run_date": "2026-05-04",
-    "new_leads": 0,
-    "total_leads": 0,
+    "run_date": "2026-05-11",
+    "new_leads": 1,
+    "total_leads": 1,
     "email_sent": 1,
     "notes": ""
   },
@@ -49,9 +49,9 @@
   },
   {
     "id": 6,
-    "run_date": "2026-04-27",
+    "run_date": "2026-05-04",
     "new_leads": 0,
-    "total_leads": 1,
+    "total_leads": 0,
     "email_sent": 1,
     "notes": ""
   },
@@ -65,7 +65,7 @@
   },
   {
     "id": 8,
-    "run_date": "2026-04-20",
+    "run_date": "2026-04-27",
     "new_leads": 0,
     "total_leads": 1,
     "email_sent": 1,
@@ -75,13 +75,13 @@
     "id": 9,
     "run_date": "2026-04-20",
     "new_leads": 0,
-    "total_leads": 0,
+    "total_leads": 1,
     "email_sent": 1,
     "notes": ""
   },
   {
     "id": 10,
-    "run_date": "2026-04-13",
+    "run_date": "2026-04-20",
     "new_leads": 0,
     "total_leads": 0,
     "email_sent": 1,
@@ -97,9 +97,9 @@
   },
   {
     "id": 12,
-    "run_date": "2026-04-06",
+    "run_date": "2026-04-13",
     "new_leads": 0,
-    "total_leads": 1,
+    "total_leads": 0,
     "email_sent": 1,
     "notes": ""
   },
@@ -113,6 +113,14 @@
   },
   {
     "id": 14,
+    "run_date": "2026-04-06",
+    "new_leads": 0,
+    "total_leads": 1,
+    "email_sent": 1,
+    "notes": ""
+  },
+  {
+    "id": 15,
     "run_date": "2026-03-30",
     "new_leads": 20,
     "total_leads": 20,
@@ -120,7 +128,7 @@
     "notes": ""
   },
   {
-    "id": 15,
+    "id": 16,
     "run_date": "2026-03-30",
     "new_leads": 63,
     "total_leads": 100,
@@ -128,7 +136,7 @@
     "notes": ""
   },
   {
-    "id": 16,
+    "id": 17,
     "run_date": "2026-03-30",
     "new_leads": 50,
     "total_leads": 154,
@@ -136,7 +144,7 @@
     "notes": ""
   },
   {
-    "id": 17,
+    "id": 18,
     "run_date": "2026-03-30",
     "new_leads": 0,
     "total_leads": 1,
@@ -144,18 +152,10 @@
     "notes": ""
   },
   {
-    "id": 18,
+    "id": 19,
     "run_date": "2026-03-25",
     "new_leads": 1,
     "total_leads": 2,
-    "email_sent": 1,
-    "notes": ""
-  },
-  {
-    "id": 19,
-    "run_date": "2026-03-09",
-    "new_leads": 0,
-    "total_leads": 0,
     "email_sent": 1,
     "notes": ""
   },
@@ -185,6 +185,14 @@
   },
   {
     "id": 23,
+    "run_date": "2026-03-09",
+    "new_leads": 0,
+    "total_leads": 0,
+    "email_sent": 1,
+    "notes": ""
+  },
+  {
+    "id": 24,
     "run_date": "2026-03-08",
     "new_leads": 0,
     "total_leads": 0,
